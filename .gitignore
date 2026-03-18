@@ -1,6 +1,8 @@
 # Source : https://github.com/github/gitignore
 # Maven, Node, Python, Rails
 
+.idea/
+
 # Maven
 
 target/
