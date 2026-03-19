@@ -6,7 +6,7 @@ import java.util.List;
 import com.hackerrank.sample.model.Product;
 
 @Repository
-public interface ProductJsonRepository {
+public interface ProductRepository {
     void createProduct(ProductInformation productInformation );
     void deleteProductById(Long id);
     void deleteAllProducts();
