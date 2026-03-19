@@ -25,6 +25,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/products")
 @Slf4j
@@ -32,6 +40,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class ProductsController {
     private final ProductService productService;
 
+    @Operation(summary = "Creates a new product", description = "Create a new product, persists it and returns the generated productId")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Product created successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ProductCreatedResponseDto.class)
+                    )),
+            @ApiResponse(responseCode = "400", description = "Invalid request payload", content = @Content)
+    })
     @PostMapping(consumes = "application/json")
     @ResponseStatus(HttpStatus.CREATED)
     public ProductCreatedResponseDto createProduct(@RequestBody @Valid ProductsRequestDto productsRequestDto) {
@@ -41,6 +60,19 @@ public class ProductsController {
         return productCreatedResponseDto;
     }
 
+    @Operation(summary = "Get product by id", description = "Retrieves a single product by its identifier")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Product returned successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ProductDetailsResponseDto.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "400", description = "Invalid product id", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
+    })
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public ProductDetailsResponseDto getProductById(@PathVariable @Positive(message = "product id must be a positive number") Long id) {
@@ -50,6 +82,20 @@ public class ProductsController {
         return productDetailsResponseDto;
     }
 
+    /**
+     * For comparison use cases, prefer the multi-item endpoint (?ids=).
+     */
+    @Operation(summary = "Get all products", description = "Retrieves all stored products")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Products returned successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = ProductResponseDto.class))
+                    )
+            )
+    })
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<ProductResponseDto> getAllProducts() {
@@ -59,6 +105,32 @@ public class ProductsController {
         return productResponseDtos;
     }
 
+    /**
+     * Retrieves multiple products by their identifiers.
+     * <p>
+     * This endpoint exists to support the product comparison use case
+     * described in the challenge requirements.
+     * <p>
+     * Validation rules:
+     * - At least 2 and at most 10 ids
+     * - All ids must be positive
+     * - Duplicate ids are rejected at service level
+     * <p>
+     * If any product does not exist, the service raises a NotFound exception.
+     */
+    @Operation(summary = "Get products by ids", description = "Retrieves multiple products by their identifiers (example ?ids=1,2,3)")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Products returned successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = ProductResponseDto.class))
+                    )
+            ),
+            @ApiResponse(responseCode = "400", description = "Invalid ids list", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Any product not found", content = @Content)
+    })
     @GetMapping(params = "ids")
     @ResponseStatus(HttpStatus.OK)
     public List<ProductResponseDto> getProductByIds(@RequestParam(name = "ids")
@@ -71,6 +143,12 @@ public class ProductsController {
         return productResponseDto;
     }
 
+    @Operation(summary = "Delete product by id", description = "Deletes a single product by its identifier")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Product deleted successfully", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid product id", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
+    })
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProductById(@PathVariable @Positive(message = "product id must be a positive number") Long id) {
@@ -79,6 +157,13 @@ public class ProductsController {
         log.info("deleteProductById - request processed successfully");
     }
 
+    /**
+     * Utility endpoint kept to maintain parity with the base project template.
+     */
+    @Operation(summary = "Delete all products", description = "Deletes all stored products (utility endpoint; use carefully)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "All products deleted successfully", content = @Content)
+    })
     @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteAllProducts() {
@@ -87,6 +172,12 @@ public class ProductsController {
         log.info("deleteAllProducts - request processed successfully");
     }
 
+    @Operation(summary = "Update product by id", description = "Updates an existing product by its identifier")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Product updated successfully", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid request payload or product id", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
+    })
     @PutMapping(path = "/{id}", consumes = "application/json")
     @ResponseStatus(HttpStatus.OK)
     public void updateProductById(@PathVariable @Positive(message = "product id must be a positive number") Long id, 
