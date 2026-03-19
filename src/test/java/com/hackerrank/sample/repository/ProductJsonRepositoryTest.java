@@ -3,19 +3,41 @@ package com.hackerrank.sample.repository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hackerrank.sample.model.ProductInformation;
 import com.hackerrank.sample.storage.AtomicJsonStore;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ProductJsonRepositoryTest {
 
-    @TempDir
-    Path tempDir;
+    private static final Path STORE_PATH = Paths.get("data/products.json");
+
+    private ProductJsonRepository repo;
+
+    @BeforeEach
+    void setup() throws Exception {
+        Path parent = STORE_PATH.getParent();
+        if (parent != null) {
+            Files.createDirectories(parent);
+        }
+        Files.writeString(STORE_PATH, "{}", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+
+        AtomicJsonStore store = new AtomicJsonStore(new ObjectMapper());
+        repo = new ProductJsonRepository(store);
+    }
+
+    @AfterEach
+    void cleanup() throws Exception {
+        Files.writeString(STORE_PATH, "{}", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+    }
 
     private static ProductInformation info(String name) {
         ProductInformation i = new ProductInformation();
@@ -27,75 +49,64 @@ class ProductJsonRepositoryTest {
         return i;
     }
 
-    private ProductJsonRepository repo() {
-        Path file = tempDir.resolve("products.json");
-        AtomicJsonStore store = new AtomicJsonStore(file, new ObjectMapper());
-        return new ProductJsonRepository(store);
+    @Test
+    void createProduct_returnsIdStartingAt1_whenStoreIsEmpty() {
+        assertEquals(1L, repo.createProduct(info("p1")));
     }
 
     @Test
-    void createAndGetById() {
-        ProductJsonRepository r = repo();
-        Long id = r.createProduct(info("p1"));
-
-        assertEquals(1L, id);
-        assertTrue(r.getProductById(id).isPresent());
-        assertEquals("p1", r.getProductById(id).orElseThrow().getInformation().getName());
+    void createThenGetById_returnsProduct() {
+        Long id = repo.createProduct(info("p1"));
+        var found = repo.getProductById(id);
+        assertTrue(found.isPresent());
+        assertEquals("p1", found.orElseThrow().getInformation().getName());
     }
 
     @Test
     void createGeneratesIncrementalIds() {
-        ProductJsonRepository r = repo();
-        assertEquals(1L, r.createProduct(info("p1")));
-        assertEquals(2L, r.createProduct(info("p2")));
+        assertEquals(1L, repo.createProduct(info("p1")));
+        assertEquals(2L, repo.createProduct(info("p2")));
+        assertEquals(3L, repo.createProduct(info("p3")));
+    }
+
+    @Test
+    void deleteProductById_isIdempotent() {
+        Long id = repo.createProduct(info("p1"));
+        assertTrue(repo.deleteProductById(id));
+        assertFalse(repo.deleteProductById(id));
+    }
+
+    @Test
+    void deleteAllProducts_returnsFalseWhenAlreadyEmpty() {
+        assertFalse(repo.deleteAllProducts());
+    }
+
+    @Test
+    void deleteAllProducts_returnsTrueWhenHadData() {
+        repo.createProduct(info("p1"));
+        assertTrue(repo.deleteAllProducts());
+        assertTrue(repo.getAllProducts().isEmpty());
     }
 
     @Test
     void updateProductById_returnsFalseWhenMissing() {
-        ProductJsonRepository r = repo();
-        assertFalse(r.updateProductById(999L, info("x")));
+        assertFalse(repo.updateProductById(999L, info("x")));
     }
 
     @Test
     void updateProductById_updatesWhenExists() {
-        ProductJsonRepository r = repo();
-        Long id = r.createProduct(info("old"));
-
-        assertTrue(r.updateProductById(id, info("new")));
-        assertEquals("new", r.getProductById(id).orElseThrow().getInformation().getName());
-    }
-
-    @Test
-    void deleteProductById_removesAndReturnsTrue() {
-        ProductJsonRepository r = repo();
-        Long id = r.createProduct(info("p1"));
-
-        assertTrue(r.deleteProductById(id));
-        assertTrue(r.getProductById(id).isEmpty());
-        assertFalse(r.deleteProductById(id));
-    }
-
-    @Test
-    void deleteAllProducts_clearsAndIndicatesIfHadData() {
-        ProductJsonRepository r = repo();
-        assertFalse(r.deleteAllProducts());
-
-        r.createProduct(info("p1"));
-        r.createProduct(info("p2"));
-
-        assertTrue(r.deleteAllProducts());
-        assertTrue(r.getAllProducts().isEmpty());
+        Long id = repo.createProduct(info("old"));
+        assertTrue(repo.updateProductById(id, info("new")));
+        assertEquals("new", repo.getProductById(id).orElseThrow().getInformation().getName());
     }
 
     @Test
     void getProductsByIds_filtersMissingAndDedupes() {
-        ProductJsonRepository r = repo();
-        Long id1 = r.createProduct(info("p1"));
-        Long id2 = r.createProduct(info("p2"));
+        Long id1 = repo.createProduct(info("p1"));
+        Long id2 = repo.createProduct(info("p2"));
 
-        var out = r.getProductsByIds(List.of(id2, id2, 999L, id1));
+        var out = repo.getProductsByIds(List.of(id2, id2, 999L, id1));
         assertEquals(2, out.size());
         assertEquals(List.of(id2, id1), out.stream().map(p -> p.getId()).toList());
     }
 }
-

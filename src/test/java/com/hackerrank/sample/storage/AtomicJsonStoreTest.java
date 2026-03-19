@@ -2,19 +2,39 @@ package com.hackerrank.sample.storage;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hackerrank.sample.model.ProductInformation;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class AtomicJsonStoreTest {
 
-    @TempDir
-    Path tempDir;
+    private static final Path STORE_PATH = Paths.get("data/products.json");
+
+    private AtomicJsonStore store;
+
+    @BeforeEach
+    void setup() throws Exception {
+        Path parent = STORE_PATH.getParent();
+        if (parent != null) {
+            Files.createDirectories(parent);
+        }
+        Files.writeString(STORE_PATH, "{}", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        store = new AtomicJsonStore(new ObjectMapper());
+    }
+
+    @AfterEach
+    void cleanup() throws Exception {
+        Files.writeString(STORE_PATH, "{}", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+    }
 
     private static ProductInformation info(String name) {
         ProductInformation i = new ProductInformation();
@@ -27,10 +47,14 @@ class AtomicJsonStoreTest {
     }
 
     @Test
-    void writeAtomically_persistsAndReadAllReturnsData() {
-        Path file = tempDir.resolve("products.json");
-        AtomicJsonStore store = new AtomicJsonStore(file, new ObjectMapper());
+    void readAll_returnsEmpty_whenStoreIsEmpty() {
+        Map<String, ProductInformation> out = store.readAll();
+        assertNotNull(out);
+        assertTrue(out.isEmpty());
+    }
 
+    @Test
+    void writeAtomically_persistsData() {
         store.writeAtomically(data -> {
             data.put("1", info("p1"));
             return null;
@@ -43,9 +67,6 @@ class AtomicJsonStoreTest {
 
     @Test
     void writeAtomically_updatesExistingKey() {
-        Path file = tempDir.resolve("products.json");
-        AtomicJsonStore store = new AtomicJsonStore(file, new ObjectMapper());
-
         store.writeAtomically(data -> {
             data.put("1", info("old"));
             return null;
@@ -59,4 +80,3 @@ class AtomicJsonStoreTest {
         assertEquals("new", store.readAll().get("1").getName());
     }
 }
-
