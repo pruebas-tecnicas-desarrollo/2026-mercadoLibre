@@ -57,9 +57,9 @@ public class ProductsController {
 
     @GetMapping("/ids")
     @ResponseStatus(HttpStatus.OK)
-    public ProductResponseDto getProductByIds(@RequestParam List<Long> ids) {
+    public List<ProductResponseDto> getProductByIds(@RequestParam List<Long> ids) {
         log.info("getProductByIds - request received");
-        ProductResponseDto productResponseDto = productService.getProductByIds(ids);
+        List<ProductResponseDto> productResponseDto = productService.getProductByIds(ids);
         log.info("getProductByIds - request processed successfully");
         return productResponseDto;
     }
