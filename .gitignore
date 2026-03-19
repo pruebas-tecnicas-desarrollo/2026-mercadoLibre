@@ -2,7 +2,8 @@
 # Maven, Node, Python, Rails
 
 .idea/
-
+data/
+logs/
 # Maven
 
 target/
