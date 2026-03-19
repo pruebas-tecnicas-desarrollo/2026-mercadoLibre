@@ -23,4 +23,4 @@ docker compose up -d
 Write-Host "Containers started successfully." -ForegroundColor Green
 
 Write-Host "`n==> Showing live logs of the backend..." -ForegroundColor Magenta
-docker compose logs -f backend
+docker compose logs -f api
