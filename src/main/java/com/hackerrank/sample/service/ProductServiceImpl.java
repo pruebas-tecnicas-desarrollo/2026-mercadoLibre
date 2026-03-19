@@ -3,6 +3,7 @@ package com.hackerrank.sample.service;
 import com.hackerrank.sample.dto.ProductCreatedResponseDto;
 import com.hackerrank.sample.dto.ProductDetailsResponseDto;
 import com.hackerrank.sample.dto.ProductResponseDto;
+import com.hackerrank.sample.dto.ProductsRequestDto;
 import com.hackerrank.sample.model.Product;
 import com.hackerrank.sample.model.ProductInformation;
 import com.hackerrank.sample.repository.ProductRepository;
@@ -38,11 +39,13 @@ public class ProductServiceImpl implements ProductService {
                 .build();
     }
 
+    @Override
     @Transactional
-    public ProductCreatedResponseDto createProduct(ProductInformation productInformation) {        
-        log.debug("received product information: {}", productInformation);
-
+    public ProductCreatedResponseDto createProduct(ProductsRequestDto productsRequestDto) {        
+        log.debug("received product information: {}", productsRequestDto);
+        
         log.info("trying to create the requested product...");
+        ProductInformation productInformation = productsRequestDto.getInformation();
         Long id = productRepository.createProduct(productInformation);
         log.debug("the requested product was created successfully");
 
@@ -119,5 +122,6 @@ public class ProductServiceImpl implements ProductService {
 
         log.debug("product updated successfully, id={}", id);
     }
+
 
 }
