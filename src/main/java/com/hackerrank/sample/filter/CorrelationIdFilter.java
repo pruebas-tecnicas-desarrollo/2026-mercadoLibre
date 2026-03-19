@@ -1,4 +1,4 @@
-package com.hackerrank.sample.config;
+package com.hackerrank.sample.filter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
