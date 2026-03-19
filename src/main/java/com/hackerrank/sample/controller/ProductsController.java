@@ -59,7 +59,7 @@ public class ProductsController {
         return productResponseDtos;
     }
 
-    @GetMapping("/ids")
+    @GetMapping(params = "ids")
     @ResponseStatus(HttpStatus.OK)
     public List<ProductResponseDto> getProductByIds(@RequestParam(name = "ids")
                                                     @NotEmpty(message = "ids list cannot be empty")
