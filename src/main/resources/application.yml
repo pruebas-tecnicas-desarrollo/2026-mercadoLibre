@@ -1,0 +1,10 @@
+app:
+  storage:
+    products-file: data/products.json
+
+spring:
+  jackson:
+    default-property-inclusion: non_null
+  output:
+    ansi:
+      enabled: ALWAYS
