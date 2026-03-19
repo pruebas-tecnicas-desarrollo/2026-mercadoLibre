@@ -39,7 +39,6 @@ public class ProductServiceImpl implements ProductService {
                 .build();
     }
 
-    @Override
     @Transactional
     public ProductCreatedResponseDto createProduct(ProductsRequestDto productsRequestDto) {        
         log.debug("received product information: {}", productsRequestDto);
