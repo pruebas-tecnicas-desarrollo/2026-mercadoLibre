@@ -82,9 +82,9 @@ public class ProductsController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void updateProduct(@PathVariable Long id, @RequestBody ProductInformation productInformation) {
+    public void updateProductById(@PathVariable Long id, @RequestBody ProductInformation productInformation) {
         log.info("updateProduct - request received");
-        productService.updateProduct(id, productInformation);
+        productService.updateProductById(id, productInformation);
         log.info("updateProduct - request processed successfully");
     }
 }
