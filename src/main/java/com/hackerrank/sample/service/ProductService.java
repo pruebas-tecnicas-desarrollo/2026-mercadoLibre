@@ -2,12 +2,13 @@ package com.hackerrank.sample.service;
 
 import com.hackerrank.sample.dto.ProductCreatedResponseDto;
 import com.hackerrank.sample.dto.ProductDetailsResponseDto;
+import com.hackerrank.sample.dto.ProductsRequestDto;
 import com.hackerrank.sample.dto.ProductResponseDto;
 import com.hackerrank.sample.model.ProductInformation;
 import java.util.List;
 
 public interface ProductService {
-    ProductCreatedResponseDto createProduct(ProductInformation productInformation);
+    ProductCreatedResponseDto createProduct(ProductsRequestDto productsRequestDto);
 
     ProductDetailsResponseDto getProductById(Long id);
     List<ProductResponseDto> getProductByIds(List<Long> ids);
