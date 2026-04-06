@@ -1,0 +1,5 @@
+01_mass_create_and_verify.json: Mass creation and full validation
+02_delete_some_and_verify_remaining.json: Partial deletion and integrity check
+03_read_after_each_create.json: Immediate read after creation
+04_delete_all_twice_idempotency_style.json: Idempotent full deletion behavior
+05_interlaved_create_delete_read.json: Interleaved create delete read flow

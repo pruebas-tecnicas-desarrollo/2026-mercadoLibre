@@ -1,0 +1,5 @@
+{"request":{"method":"DELETE","url":"/products","headers":{},"body":{}},"response":{"status_code":"204","headers":{},"body":{}}}
+{"request":{"method":"DELETE","url":"/products","headers":{},"body":{}},"response":{"status_code":"204","headers":{},"body":{}}}
+{"request":{"method":"GET","url":"/products","headers":{},"body":{}},"response":{"status_code":"200","headers":{"Content-Type":"application/json"},"body":[]}}
+{"request":{"method":"POST","url":"/products","headers":{"Content-Type":"application/json"},"body":{"information":{"name":"Dock Station","imageUrl":"https://img.test/dock.png","description":"USB-C docking station","price":139.99,"rating":4.4,"specifications":[{"key":"videoOutput","value":"dual-4k"}]}}},"response":{"status_code":"201","headers":{},"body":{}}}
+{"request":{"method":"GET","url":"/products/1","headers":{},"body":{}},"response":{"status_code":"200","headers":{"Content-Type":"application/json"},"body":{"information":{"name":"Dock Station","imageUrl":"https://img.test/dock.png","description":"USB-C docking station","price":139.99,"rating":4.4,"specifications":[{"key":"videoOutput","value":"dual-4k"}]}}}}

@@ -1,0 +1,19 @@
+services:
+  api:
+    build: .
+    container_name: meli-products-api
+    ports:
+      - "8080:8080"
+
+    volumes:
+      # Mount a folder, not a single file (more robust on Docker Desktop)
+      - ./data:/app/data
+
+      # Application logs volume
+      - ./logs:/app/logs
+
+    environment:
+      - TZ=America/Argentina/Buenos_Aires
+      - APP_STORAGE_PRODUCTS_FILE=/app/data/products.json
+
+    restart: unless-stopped
